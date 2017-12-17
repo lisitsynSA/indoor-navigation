@@ -64,13 +64,20 @@ int main(int argc, char **argv)
     rangeButton->setDescription(QStringLiteral("Switch between automatic axis ranges and preset ranges"));
     rangeButton->setIconSize(QSize(0, 0));
 
+    QCommandLinkButton *stepButton = new QCommandLinkButton(widget);
+    stepButton->setText(QStringLiteral("Step"));
+    stepButton->setDescription(QStringLiteral("Make next step"));
+    stepButton->setIconSize(QSize(0, 0));
+
     vLayout->addWidget(rangeButton, 1, Qt::AlignTop);
+    vLayout->addWidget(stepButton, 1, Qt::AlignTop);
 
     widget->setWindowTitle(QStringLiteral("Input Handling for Axes"));
 
     Data *graphData = new Data(graph);
 
     QObject::connect(rangeButton, &QCommandLinkButton::clicked, graphData, &Data::toggleRanges);
+    QObject::connect(stepButton, &QCommandLinkButton::clicked, graphData, &Data::start);
 
     widget->show();
     return app.exec();

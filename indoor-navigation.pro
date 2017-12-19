@@ -27,9 +27,12 @@ SOURCES += \
         main.cpp \
     axesinputhandler.cpp \
     data.cpp \
-    label.cpp
+    label.cpp \
+    calc.cpp
 
 HEADERS += \
     axesinputhandler.h \
     data.h \
-    label.h
+    label.h \
+    calc.h \
+    const.h

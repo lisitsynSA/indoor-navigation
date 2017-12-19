@@ -28,6 +28,7 @@
 ****************************************************************************/
 
 #include "data.h"
+#include "const.h"
 
 #include <QtCore/QRandomGenerator>
 #include <QtDataVisualization/QScatterDataProxy>
@@ -38,7 +39,7 @@
 
 using namespace QtDataVisualization;
 
-const int itemCount = 500;
+const int itemCount = 3000;
 
 Data::Data(Q3DScatter *scatter)
     : m_graph(scatter),
@@ -55,9 +56,9 @@ Data::Data(Q3DScatter *scatter)
     m_graph->setShadowQuality(QAbstract3DGraph::ShadowQualityMedium);
     m_graph->scene()->activeCamera()->setCameraPreset(Q3DCamera::CameraPresetIsometricRight);
 
-    m_graph->axisX()->setRange(0.0f, 40.0f);//-20.0f, 20.0f);
-    m_graph->axisY()->setRange(0.0f, 20.0f);//-10.0f, 10.0f);
-    m_graph->axisZ()->setRange(0.0f, 40.0f);//-20.0f, 20.0f);
+    m_graph->axisX()->setRange(0.0f, SIZE_X);//-20.0f, 20.0f);
+    m_graph->axisY()->setRange(0.0f, SIZE_Y);//-10.0f, 10.0f);
+    m_graph->axisZ()->setRange(0.0f, SIZE_Z);//-20.0f, 20.0f);
 
     //! [0]
     // Give ownership of the handler to the graph and make it the active handler
@@ -86,9 +87,9 @@ void Data::toggleRanges()
         m_inputHandler->setDragSpeedModifier(1.5f);
         m_autoAdjust = true;
     } else {
-        m_graph->axisX()->setRange(0.0f, 40.0f);//-20.0f, 20.0f);
-        m_graph->axisY()->setRange(0.0f, 20.0f);//-10.0f, 10.0f);
-        m_graph->axisZ()->setRange(0.0f, 40.0f);//-20.0f, 20.0f);
+        m_graph->axisX()->setRange(0.0f, SIZE_X);//-20.0f, 20.0f);
+        m_graph->axisY()->setRange(0.0f, SIZE_Y);//-10.0f, 10.0f);
+        m_graph->axisZ()->setRange(0.0f, SIZE_Z);//-20.0f, 20.0f);
         m_inputHandler->setDragSpeedModifier(15.0f);
         m_autoAdjust = false;
     }
@@ -120,7 +121,7 @@ void Data::addData()
     series5->setMesh(QAbstract3DSeries::MeshSphere);
     m_graph->addSeries(series5);
 
-    QScatterDataArray *dataArray = new QScatterDataArray;
+    /*QScatterDataArray *dataArray = new QScatterDataArray;
     dataArray->resize(itemCount);
     QScatterDataItem *ptrToDataArray = &dataArray->first();
     for (int i = 0; i < itemCount; i++) {
@@ -167,7 +168,7 @@ void Data::addData()
     m_graph->seriesList().at(1)->dataProxy()->resetArray(dataArray2);
     m_graph->seriesList().at(2)->dataProxy()->resetArray(dataArray3);
     m_graph->seriesList().at(3)->dataProxy()->resetArray(dataArray4);
-    m_graph->seriesList().at(4)->dataProxy()->resetArray(dataArray5);
+    m_graph->seriesList().at(4)->dataProxy()->resetArray(dataArray5);*/
 }
 
 void Data::updateData(int series, QScatterDataArray *dataArray)

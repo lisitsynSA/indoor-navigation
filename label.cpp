@@ -10,14 +10,14 @@ Label::Label(float init_x0, float init_y0, float init_z0, float(*init_p)(float*)
 Label::updateField(float phy)
 {
     float data[7] = {x0, y0, z0, phy};
-    for (int nx = 0; nx < 40*4; nx++)
-    for (int ny = 0; ny < 40*4; ny++)
-    for (int nz = 0; nz < 40*4; nz++)
+    for (int nx = 0; nx < SIZE_X*PPM; nx++)
+    for (int ny = 0; ny < SIZE_Y*PPM; ny++)
+    for (int nz = 0; nz < SIZE_Z*PPM; nz++)
     {
-        data[4] = nx*0.25;
-        data[5] = ny*0.25;
-        data[6] = nz*0.25;
-        field[nx*20*4*40*4 + ny*40*4 + nz] = (*p)(data);
+        data[4] = nx/PPM_f;
+        data[5] = ny/PPM_f;
+        data[6] = nz/PPM_f;
+        field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] = (*p)(data);
     }
 }
 
@@ -26,21 +26,21 @@ QScatterDataArray* Label::getArray(float level)
 {
     QScatterDataArray *dataArray = new QScatterDataArray;
     int check = 0;
-    for (int nx = 0; nx < 40*4; nx++)
-    for (int ny = 0; ny < 40*4; ny++)
-    for (int nz = 0; nz < 40*4; nz++)
+    for (int nx = 0; nx < SIZE_X*PPM - 1; nx++)
+    for (int ny = 0; ny < SIZE_Y*PPM - 1; ny++)
+    for (int nz = 0; nz < SIZE_Z*PPM - 1; nz++)
     {
         check = 0;
-        check += field[nx*20*4*40*4 + ny*40*4 + nz] > level;
-        check += field[nx*20*4*40*4 + ny*40*4 + (nz + 1)] > level;
-        check += field[nx*20*4*40*4 + (ny + 1)*40*4 + nz] > level;
-        check += field[nx*20*4*40*4 + (ny + 1)*40*4 + (nz + 1)] > level;
-        check += field[(nx + 1)*20*4*40*4 + ny*40*4 + nz] > level;
-        check += field[(nx + 1)*20*4*40*4 + ny*40*4 + (nz + 1)] > level;
-        check += field[(nx + 1)*20*4*40*4 + (ny + 1)*40*4 + nz] > level;
-        check += field[(nx + 1)*20*4*40*4 + (ny + 1)*40*4 + (nz + 1)] > level;
+        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] > level;
+        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + (nz + 1)] > level;
+        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + nz] > level;
+        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + (nz + 1)] > level;
+        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] > level;
+        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + (nz + 1)] > level;
+        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + nz] > level;
+        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + (nz + 1)] > level;
         if (check != 0 && check != 8)
-            dataArray->push_back(QVector3D(nx*0.25 + 0.125, ny*0.25 + 0.125, nz*0.25 + 0.125));
+            dataArray->push_back(QVector3D((nx + 0.5)/PPM_f, (ny + 0.5)/PPM_f, (nz + 0.5)/PPM_f));
     }
 
     return dataArray;

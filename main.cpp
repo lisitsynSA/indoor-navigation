@@ -28,6 +28,7 @@
 ****************************************************************************/
 
 #include "data.h"
+#include "calc.h"
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QWidget>
@@ -35,6 +36,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QCommandLinkButton>
 #include <QtWidgets/QMessageBox>
+#include <QDoubleSpinBox>
 
 int main(int argc, char **argv)
 {
@@ -69,15 +71,27 @@ int main(int argc, char **argv)
     stepButton->setDescription(QStringLiteral("Make next step"));
     stepButton->setIconSize(QSize(0, 0));
 
+    QDoubleSpinBox *valueBox_end = new QDoubleSpinBox(widget);
+    valueBox_end->setDecimals(5);
+    QDoubleSpinBox *valueBox_start = new QDoubleSpinBox(widget);
+    valueBox_start->setDecimals(5);
+
+
     vLayout->addWidget(rangeButton, 1, Qt::AlignTop);
     vLayout->addWidget(stepButton, 1, Qt::AlignTop);
+    vLayout->addWidget(valueBox_end, 1, Qt::AlignTop);
+    vLayout->addWidget(valueBox_start, 1, Qt::AlignTop);
 
     widget->setWindowTitle(QStringLiteral("Input Handling for Axes"));
 
     Data *graphData = new Data(graph);
+    Calc *calc = new Calc(graphData);
 
     QObject::connect(rangeButton, &QCommandLinkButton::clicked, graphData, &Data::toggleRanges);
-    QObject::connect(stepButton, &QCommandLinkButton::clicked, graphData, &Data::start);
+    QObject::connect(stepButton, &QCommandLinkButton::clicked, calc, &Calc::start);
+    QObject::connect(valueBox_end, SIGNAL(valueChanged(double)), calc, SLOT(showFieldEnd(double)));
+    QObject::connect(valueBox_start, SIGNAL(valueChanged(double)), calc, SLOT(showFieldStart(double)));
+
 
     widget->show();
     return app.exec();

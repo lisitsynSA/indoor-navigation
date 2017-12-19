@@ -26,8 +26,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     axesinputhandler.cpp \
-    data.cpp
+    data.cpp \
+    label.cpp
 
 HEADERS += \
     axesinputhandler.h \
-    data.h
+    data.h \
+    label.h

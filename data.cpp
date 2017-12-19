@@ -170,6 +170,11 @@ void Data::addData()
     m_graph->seriesList().at(4)->dataProxy()->resetArray(dataArray5);
 }
 
+void Data::updateData(int series, QScatterDataArray *dataArray)
+{
+    m_graph->seriesList().at(series)->dataProxy()->resetArray(dataArray);
+}
+
 void Data::start()
 {
     timer = new QTimer();
@@ -180,7 +185,6 @@ void Data::start()
 void Data::updateData()
 {
     static int step = 0;
-
 
     QScatterDataArray *dataArray = new QScatterDataArray;
     dataArray->resize(itemCount);

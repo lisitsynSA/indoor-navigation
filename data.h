@@ -47,6 +47,7 @@ public:
 
     void toggleRanges();
     void start();
+    void updateData(int series, QScatterDataArray *dataArray);
 
 public slots:
     void updateData();

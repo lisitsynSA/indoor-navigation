@@ -4,7 +4,7 @@ float init_p(float* data)
 {
     //qDebug() << "";
     float R = 1.0/data[3];
-    float vecLen = abs(data[0] - data[4]) + abs(data[1] - data[5]) + abs(data[2] - data[6]);
+    float vecLen = pow((data[0] - data[4])*(data[0] - data[4]) + (data[1] - data[5])*(data[1] - data[5]) + (data[2] - data[6])*(data[2] - data[6]), 0.5);
     //qDebug() << data[0] << data[1] << data[2];
     //qDebug() << data[4] << data[5] << data[6];
     //qDebug() << "phi = " << data[3] << "; R = " << R << "; vecLen = " << vecLen;
@@ -14,7 +14,7 @@ float init_p(float* data)
         return 1/(vecLen - R + 1);
     }else{
         //qDebug() << ">" << (1 - cos(vecLen*M_PI/R))/2;
-        return (1 - cos(vecLen*M_PI/R))/2;
+        return (1 - cos(vecLen*M_PI/(R*2)));
     }
 
 }
@@ -33,8 +33,12 @@ Calc::Calc(Data* init_data):
     newLabel = new Label(SIZE_X,SIZE_Y,0,&init_p);
     labels.push_back(newLabel);
 
+    x = X0;
+    y = Y0;
+    z = Z0;
+    updateSource();
+
     graphData->updateData(0, getLabels());
-    updateField();
 }
 
 Calc::~Calc()
@@ -52,6 +56,14 @@ QScatterDataArray* Calc::getLabels()
     return dataArray;
 }
 
+void Calc::updateSource()
+{
+    QScatterDataArray *dataArray = new QScatterDataArray;
+    dataArray->push_back(QVector3D(x, y, z));
+    graphData->updateData(1, dataArray);
+    updateField();
+}
+
 void Calc::updateField()
 {
     for (int nx = 0; nx < SIZE_X*PPM; nx++)
@@ -63,7 +75,8 @@ void Calc::updateField()
     for (int i = 0; i < labels.size(); ++i)
     {
         qDebug() << "Update Label's field:" << i;
-        labels.at(i)->updateField(1/60.0);
+        labels.at(i)->updateField(1/distance(x, y, z, labels.at(i)->x0, labels.at(i)->y0, labels.at(i)->z0));
+        //2/pow((SIZE_X*SIZE_X + SIZE_Y*SIZE_Y + SIZE_Z*SIZE_Z),0.5));
         for (int nx = 0; nx < SIZE_X*PPM; nx++)
         for (int ny = 0; ny < SIZE_Y*PPM; ny++)
         for (int nz = 0; nz < SIZE_Z*PPM; nz++)
@@ -80,17 +93,26 @@ void Calc::start()
     timer = new QTimer();
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(showField()));
     timer->start(100); // И запустим таймер
+    value = startValue;
 }
 
+void Calc::stop()
+{
+    qDebug() << "End";
+    timer->stop();
+    delete timer;
+    value = 0;
+    QScatterDataArray *dataArray = new QScatterDataArray;
+    graphData->updateData(4, dataArray); // clear Field
+
+}
 
 void Calc::showField()
 {
-    static float value = startValue;
     graphData->updateData(4, getArray(value));
     value += (endValue - startValue)/100;
     if (value > endValue)
         value = startValue;
-
 }
 
 void Calc::showFieldEnd(double value)

@@ -34,7 +34,7 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QCommandLinkButton>
+#include <QPushButton>
 #include <QtWidgets/QMessageBox>
 #include <QDoubleSpinBox>
 
@@ -61,36 +61,56 @@ int main(int argc, char **argv)
     hLayout->addWidget(container, 1);
     hLayout->addLayout(vLayout);
 
-    QCommandLinkButton *rangeButton = new QCommandLinkButton(widget);
+    QPushButton *rangeButton = new QPushButton(widget);
     rangeButton->setText(QStringLiteral("Toggle axis ranges"));
-    rangeButton->setDescription(QStringLiteral("Switch between automatic axis ranges and preset ranges"));
-    rangeButton->setIconSize(QSize(0, 0));
 
-    QCommandLinkButton *stepButton = new QCommandLinkButton(widget);
-    stepButton->setText(QStringLiteral("Step"));
-    stepButton->setDescription(QStringLiteral("Make next step"));
-    stepButton->setIconSize(QSize(0, 0));
+    QPushButton *startButton = new QPushButton(widget);
+    startButton->setText(QStringLiteral("Start"));
 
-    QDoubleSpinBox *valueBox_end = new QDoubleSpinBox(widget);
-    valueBox_end->setDecimals(5);
-    QDoubleSpinBox *valueBox_start = new QDoubleSpinBox(widget);
-    valueBox_start->setDecimals(5);
+    QPushButton *stopButton = new QPushButton(widget);
+    stopButton->setText(QStringLiteral("End"));
+
+    QDoubleSpinBox *EndValueBox = new QDoubleSpinBox(widget);
+    EndValueBox->setDecimals(5);
+    QDoubleSpinBox *StartValueBox = new QDoubleSpinBox(widget);
+    StartValueBox->setDecimals(5);
+
+    QDoubleSpinBox *XvalueBox = new QDoubleSpinBox(widget);
+    XvalueBox->setValue(X0);
+    QDoubleSpinBox *YvalueBox = new QDoubleSpinBox(widget);
+    YvalueBox->setValue(Y0);
+    QDoubleSpinBox *ZvalueBox = new QDoubleSpinBox(widget);
+    ZvalueBox->setValue(Z0);
+    QPushButton *updateButton = new QPushButton(widget);
+    updateButton->setText(QStringLiteral("Update"));
 
 
     vLayout->addWidget(rangeButton, 1, Qt::AlignTop);
-    vLayout->addWidget(stepButton, 1, Qt::AlignTop);
-    vLayout->addWidget(valueBox_end, 1, Qt::AlignTop);
-    vLayout->addWidget(valueBox_start, 1, Qt::AlignTop);
+    vLayout->addWidget(startButton, 1, Qt::AlignTop);
+    vLayout->addWidget(stopButton, 1, Qt::AlignTop);
+    vLayout->addWidget(EndValueBox, 1, Qt::AlignTop);
+    vLayout->addWidget(StartValueBox, 1, Qt::AlignTop);
+
+    vLayout->addSpacing(10);
+    vLayout->addWidget(XvalueBox, 1, Qt::AlignBottom);
+    vLayout->addWidget(YvalueBox, 1, Qt::AlignBottom);
+    vLayout->addWidget(ZvalueBox, 1, Qt::AlignBottom);
+    vLayout->addWidget(updateButton, 1, Qt::AlignBottom);
 
     widget->setWindowTitle(QStringLiteral("Input Handling for Axes"));
 
     Data *graphData = new Data(graph);
     Calc *calc = new Calc(graphData);
 
-    QObject::connect(rangeButton, &QCommandLinkButton::clicked, graphData, &Data::toggleRanges);
-    QObject::connect(stepButton, &QCommandLinkButton::clicked, calc, &Calc::start);
-    QObject::connect(valueBox_end, SIGNAL(valueChanged(double)), calc, SLOT(showFieldEnd(double)));
-    QObject::connect(valueBox_start, SIGNAL(valueChanged(double)), calc, SLOT(showFieldStart(double)));
+    QObject::connect(rangeButton, &QPushButton::clicked, graphData, &Data::toggleRanges);
+    QObject::connect(startButton, &QPushButton::clicked, calc, &Calc::start);
+    QObject::connect(stopButton, &QPushButton::clicked, calc, &Calc::stop);
+    QObject::connect(EndValueBox, SIGNAL(valueChanged(double)), calc, SLOT(showFieldEnd(double)));
+    QObject::connect(StartValueBox, SIGNAL(valueChanged(double)), calc, SLOT(showFieldStart(double)));
+    QObject::connect(XvalueBox, SIGNAL(valueChanged(double)), calc, SLOT(setX(double)));
+    QObject::connect(YvalueBox, SIGNAL(valueChanged(double)), calc, SLOT(setY(double)));
+    QObject::connect(ZvalueBox, SIGNAL(valueChanged(double)), calc, SLOT(setZ(double)));
+    QObject::connect(updateButton, &QPushButton::clicked, calc, &Calc::updateSource);
 
 
     widget->show();

@@ -7,7 +7,7 @@ Label::Label(float init_x0, float init_y0, float init_z0, float(*init_p)(float*)
     p(init_p)
 {}
 
-Label::updateField(float phy)
+void Label::updateField(float phy)
 {
     float data[7] = {x0, y0, z0, phy};
     for (int nx = 0; nx < SIZE_X*PPM; nx++)

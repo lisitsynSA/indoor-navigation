@@ -40,9 +40,8 @@ float init_p(float* data, float(*dd)(float))
 float init_dd(float angle)
 {
     //return 1; // circle
-    //return 0.5 + abs(cos(angle))/2;
-    return 0.2 + abs(cos(angle))*4/5;
-    //return abs(cos(angle)); // TODO
+    //return (1.0 + cos(angle)*cos(angle)*2.0)/3.0;
+    return cos(angle)*cos(angle);
     /*if (angle <= M_PI/6)
         return 1;
     else
@@ -56,10 +55,10 @@ Calc::Calc(Data* init_data):
     endValue = 0;
     Label *newLabel = new Label(0,0,0,atan(pow(2, 0.5)),M_PI/4,&init_p, &init_dd);
     labels.push_back(newLabel);
-    newLabel = new Label(SIZE_X,0,SIZE_Z,M_PI - atan(pow(2, 0.5)),3*M_PI/4,&init_p, &init_dd);
-    labels.push_back(newLabel);
-    newLabel = new Label(0,SIZE_Y,SIZE_Z,atan(pow(2, 0.5)),5*M_PI/4,&init_p, &init_dd);
-    labels.push_back(newLabel);
+    //newLabel = new Label(SIZE_X,0,SIZE_Z,M_PI - atan(pow(2, 0.5)),3*M_PI/4,&init_p, &init_dd);
+    //labels.push_back(newLabel);
+    //newLabel = new Label(0,SIZE_Y,SIZE_Z,atan(pow(2, 0.5)),5*M_PI/4,&init_p, &init_dd);
+    //labels.push_back(newLabel);
     //newLabel = new Label(SIZE_X,SIZE_Y,0,M_PI - atan(pow(2, 0.5)),7*M_PI/4,&init_p, &init_dd);
     //labels.push_back(newLabel);
 

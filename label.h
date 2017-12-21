@@ -9,13 +9,14 @@ class Label
 {
 public:
     Label(){}
-    Label(float init_x0, float init_y0, float init_z0, float(*init_p)(float*));
+    Label(float init_x0, float init_y0, float init_z0, float init_alfa, float init_beta, float(*init_p)(float*, float(*)(float)), float(*init_dd)(float));
 
-    float x0, y0, z0;
+    float x0, y0, z0, alfa, beta; // 0 <= alfa <= PI (from 0X); 0 <= beta <= 2PI (from 0Y in Y0Z)
+    float xdd, ydd, zdd; // vector of directional diagram
     // probability function
-    float(*p)(float*); //array: x0 y0 z0 phy x y z
+    float(*p)(float*, float(*)(float)); //array: x0 y0 z0 cos sinsin sincos phy x y z
     // directional diagram
-    float(*dd)(float angle);
+    float(*dd)(float);
     float field[SIZE_X*PPM*SIZE_Y*PPM*SIZE_Z*PPM];
 
     void updateField(float phy);

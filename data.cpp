@@ -97,29 +97,35 @@ void Data::toggleRanges()
 
 void Data::addData()
 {
+    // Labels
     QScatter3DSeries *series = new QScatter3DSeries;
     series->setMesh(QAbstract3DSeries::MeshCube);
     series->setMeshSmooth(true);
     series->setItemSize(0.3);
     m_graph->addSeries(series);
 
+    // Source
     QScatter3DSeries *series2 = new QScatter3DSeries;
     series2->setMesh(QAbstract3DSeries::MeshMinimal);
     series2->setMeshSmooth(true);
     series2->setItemSize(0.3);
     m_graph->addSeries(series2);
 
+    // Direction of diagram
     QScatter3DSeries *series3 = new QScatter3DSeries;
     series3->setMesh(QAbstract3DSeries::MeshSphere);
     series3->setMeshSmooth(true);
     series3->setItemSize(0.23);
     m_graph->addSeries(series3);
 
+    // Room
     QScatter3DSeries *series4 = new QScatter3DSeries;
     series4->setMesh(QAbstract3DSeries::MeshBevelCube);
     series4->setMeshSmooth(true);
+    series4->setItemSize(0.001);
     m_graph->addSeries(series4);
 
+    // Points
     QScatter3DSeries *series5 = new QScatter3DSeries;
     series5->setMesh(QAbstract3DSeries::MeshSphere);
     series5->setItemSize(0.07);

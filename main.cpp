@@ -112,7 +112,7 @@ int main(int argc, char **argv)
     QObject::connect(ZvalueBox, SIGNAL(valueChanged(double)), calc, SLOT(setZ(double)));
     QObject::connect(updateButton, &QPushButton::clicked, calc, &Calc::updateSource);
 
-
+    EndValueBox->setValue(1.0);
     widget->show();
     return app.exec();
 }

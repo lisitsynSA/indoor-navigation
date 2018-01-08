@@ -25,13 +25,16 @@ float init_p(float* data, float(*dd)(float))
                  << vecLen << (x*data[3] + y*data[4] + z*data[5])\
                  << (x*data[3] + y*data[4] + z*data[5])/vecLen;*/
     //qDebug() << "phi = " << data[3] << "; R = " << R << "; vecLen = " << vecLen;
+    //return pow(M_E, -(R - vecLen)*(R - vecLen)/2.0);
     if (vecLen > R)
     {
         //qDebug() << ">" << 1/(vecLen - R + 1);
-        return 1/(vecLen - R + 1);
+        //return 1/(vecLen - R + 1);
+        return sin(M_PI/(2*(vecLen - R + 1)));
     }else{
         //qDebug() << ">" << (1 - cos(vecLen*M_PI/R))/2;
-        return (1 - cos(vecLen*M_PI/(R*2)));
+        //return (1 - cos(vecLen*M_PI/(R*2)));  // cos(M_PI/2)
+        return (1 - cos(vecLen*M_PI/R))/2;      // cos(M_PI)
     }
 
 }
@@ -55,16 +58,17 @@ Calc::Calc(Data* init_data):
     endValue = 0;
     Label *newLabel = new Label(0,0,0,atan(pow(2, 0.5)),M_PI/4,&init_p, &init_dd);
     labels.push_back(newLabel);
-    //newLabel = new Label(SIZE_X,0,SIZE_Z,M_PI - atan(pow(2, 0.5)),3*M_PI/4,&init_p, &init_dd);
-    //labels.push_back(newLabel);
-    //newLabel = new Label(0,SIZE_Y,SIZE_Z,atan(pow(2, 0.5)),5*M_PI/4,&init_p, &init_dd);
-    //labels.push_back(newLabel);
-    //newLabel = new Label(SIZE_X,SIZE_Y,0,M_PI - atan(pow(2, 0.5)),7*M_PI/4,&init_p, &init_dd);
-    //labels.push_back(newLabel);
+    newLabel = new Label(SIZE_X,0,SIZE_Z,M_PI - atan(pow(2, 0.5)),3*M_PI/4,&init_p, &init_dd);
+    labels.push_back(newLabel);
+    newLabel = new Label(0,SIZE_Y,SIZE_Z,atan(pow(2, 0.5)),5*M_PI/4,&init_p, &init_dd);
+    labels.push_back(newLabel);
+    newLabel = new Label(SIZE_X,SIZE_Y,0,M_PI - atan(pow(2, 0.5)),7*M_PI/4,&init_p, &init_dd);
+    labels.push_back(newLabel);
 
     x = X0;
     y = Y0;
     z = Z0;
+    timer = NULL;
     updateLabels();
     updateSource();
     graphData->toggleRanges();
@@ -79,11 +83,25 @@ Calc::~Calc()
 
 void Calc::updateLabels()
 {
+    // room
     QScatterDataArray *dataArray = new QScatterDataArray;
+    dataArray->push_back(QVector3D(SIZE_X, SIZE_Y, SIZE_Z));
+    dataArray->push_back(QVector3D(SIZE_X, SIZE_Y, 0));
+    dataArray->push_back(QVector3D(SIZE_X, 0, SIZE_Z));
+    dataArray->push_back(QVector3D(SIZE_X, 0, 0));
+    dataArray->push_back(QVector3D(0, SIZE_Y, SIZE_Z));
+    dataArray->push_back(QVector3D(0, SIZE_Y, 0));
+    dataArray->push_back(QVector3D(0, 0, SIZE_Z));
+    dataArray->push_back(QVector3D(0, 0, 0));
+    graphData->updateData(3, dataArray);
+
+    // Labels
+    dataArray = new QScatterDataArray;
     for (int i = 0; i < labels.size(); ++i)
         dataArray->push_back(QVector3D(labels.at(i)->x0, labels.at(i)->y0, labels.at(i)->z0));
     graphData->updateData(0, dataArray);
 
+    // direction of diagram
     dataArray = new QScatterDataArray;
     for (int i = 0; i < labels.size(); ++i)
         dataArray->push_back(QVector3D(labels.at(i)->x0 + cos(labels.at(i)->alfa),\
@@ -124,7 +142,7 @@ void Calc::updateField()
     for (int ny = 0; ny < SIZE_Y*PPM; ny++)
     for (int nz = 0; nz < SIZE_Z*PPM; nz++)
     {
-        field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] = 0;
+        field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] = 1;//0;
     }
     for (int i = 0; i < labels.size(); ++i)
     {
@@ -135,7 +153,8 @@ void Calc::updateField()
         for (int ny = 0; ny < SIZE_Y*PPM; ny++)
         for (int nz = 0; nz < SIZE_Z*PPM; nz++)
         {
-            field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] += \
+            // +=
+            field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] *=\
                     labels.at(i)->getValue(nx, ny, nz);
         }
     }
@@ -144,7 +163,8 @@ void Calc::updateField()
 void Calc::start()
 {
     qDebug() << "Start";
-    timer = new QTimer();
+    if (timer == NULL)
+        timer = new QTimer();
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(showField()));
     timer->start(100); // И запустим таймер
     value = startValue;
@@ -154,17 +174,22 @@ void Calc::stop()
 {
     qDebug() << "End";
     timer->stop();
-    delete timer;
     value = 0;
     QScatterDataArray *dataArray = new QScatterDataArray;
     graphData->updateData(4, dataArray); // clear Field
 
 }
 
+double Calc::showValueFunc(double value)
+{
+    //return value + (endValue - startValue)/100;
+    return value == 0 ? 0.0001 : 1.2*value;
+}
+
 void Calc::showField()
 {
     graphData->updateData(4, getArray(value));
-    value += (endValue - startValue)/100;
+    value = showValueFunc(value);
     if (value > endValue)
         value = startValue;
 }

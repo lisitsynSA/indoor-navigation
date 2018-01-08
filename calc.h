@@ -29,6 +29,7 @@ public:
         { return pow((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2), 0.5); }
 
 public slots:
+    double showValueFunc(double value);
     void showField();
     void showFieldEnd(double value);
     void showFieldStart(double value);

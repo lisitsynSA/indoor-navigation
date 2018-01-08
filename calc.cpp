@@ -51,8 +51,11 @@ float init_dd(float angle)
         return 0;*/ // sector
 }
 
-Calc::Calc(Data* init_data):
-    graphData(init_data)
+Calc::Calc(Data* init_data, QCustomPlot *init_plot, QCPColorMap *init_colorMap, QCPColorScale *init_colorScale):
+    graphData(init_data),
+    plot(init_plot),
+    colorMap(init_colorMap),
+    colorScale(init_colorScale)
 {
     startValue = 0;
     endValue = 0;
@@ -72,12 +75,48 @@ Calc::Calc(Data* init_data):
     updateLabels();
     updateSource();
     graphData->toggleRanges();
+    drawPlot(3, 0);
 }
 
 Calc::~Calc()
 {
     qDeleteAll(labels);
     labels.clear();
+}
+
+void Calc::drawPlot(int type, int value)
+{
+    float minVal = 1;
+    float maxVal = 0;
+    if (type == 3)
+    {
+        // give the axes some labels:
+        plot->xAxis->setLabel("Axis X");
+        plot->yAxis->setLabel("Axis Y");
+
+        /*colorMap->data()->setSize(50, 50);
+        colorMap->data()->setRange(QCPRange(0, 2), QCPRange(0, 2));
+        for (int x = 0; x < 50; ++x)
+          for (int y = 0; y < 50; ++y)
+            colorMap->data()->setCell(x, y, qCos(x/10.0)+qSin(y/10.0));
+        colorMap->rescaleDataRange(true);*/
+
+        colorMap->data()->setSize(SIZE_X*PPM, SIZE_Y*PPM);
+        colorMap->data()->setRange(QCPRange(0, SIZE_X), QCPRange(0, SIZE_Y));
+
+        for (int nx = 0; nx < SIZE_X*PPM; nx++)
+        for (int ny = 0; ny < SIZE_Y*PPM; ny++)
+        {
+            colorMap->data()->setCell(nx, ny, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value*PPM]);
+            minVal = std::min(minVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value*PPM]);
+            maxVal = std::max(maxVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value*PPM]);
+        }
+
+        colorScale->setDataRange(QCPRange(minVal, maxVal));
+        colorMap->rescaleDataRange(true);
+        plot->rescaleAxes();
+        plot->replot();
+    }
 }
 
 
@@ -116,6 +155,8 @@ void Calc::updateSource()
     dataArray->push_back(QVector3D(x, y, z));
     graphData->updateData(1, dataArray);
     updateField();
+
+    drawPlot(3, 0);
 }
 
 float Calc::getPhy(Label* label)
@@ -173,7 +214,8 @@ void Calc::start()
 void Calc::stop()
 {
     qDebug() << "End";
-    timer->stop();
+    if (timer != NULL)
+        timer->stop();
     value = 0;
     QScatterDataArray *dataArray = new QScatterDataArray;
     graphData->updateData(4, dataArray); // clear Field

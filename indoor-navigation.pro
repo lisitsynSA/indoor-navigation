@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui datavisualization qml quick
+QT       += core gui datavisualization qml quick printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

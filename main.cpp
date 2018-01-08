@@ -29,11 +29,13 @@
 
 #include "data.h"
 #include "calc.h"
+#include "qcustomplot.h"
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QGridLayout>
 #include <QPushButton>
 #include <QtWidgets/QMessageBox>
 #include <QDoubleSpinBox>
@@ -58,8 +60,10 @@ int main(int argc, char **argv)
     QWidget *widget = new QWidget;
     QHBoxLayout *hLayout = new QHBoxLayout(widget);
     QVBoxLayout *vLayout = new QVBoxLayout();
-    hLayout->addWidget(container, 1);
+    QGridLayout *gridLayout = new QGridLayout();
+    hLayout->addWidget(container,1);
     hLayout->addLayout(vLayout);
+    vLayout->addLayout(gridLayout);
 
     QPushButton *rangeButton = new QPushButton(widget);
     rangeButton->setText(QStringLiteral("Toggle axis ranges"));
@@ -84,23 +88,37 @@ int main(int argc, char **argv)
     QPushButton *updateButton = new QPushButton(widget);
     updateButton->setText(QStringLiteral("Update"));
 
+    QCustomPlot* plot = new QCustomPlot(widget);
+    QCPColorMap* colorMap = new QCPColorMap(plot->xAxis, plot->yAxis);
+    plot->addPlottable(colorMap);
 
-    vLayout->addWidget(rangeButton, 1, Qt::AlignTop);
-    vLayout->addWidget(startButton, 1, Qt::AlignTop);
-    vLayout->addWidget(stopButton, 1, Qt::AlignTop);
-    vLayout->addWidget(EndValueBox, 1, Qt::AlignTop);
-    vLayout->addWidget(StartValueBox, 1, Qt::AlignTop);
+    colorMap->setGradient(QCPColorGradient::gpThermal);
+    QCPColorScale *colorScale = new QCPColorScale(plot);
+    colorScale->setGradient(QCPColorGradient::gpThermal);
+    colorScale->setDataRange(QCPRange(0, 1));
+    plot->plotLayout()->addElement(0, 1, colorScale);
 
-    vLayout->addSpacing(10);
-    vLayout->addWidget(XvalueBox, 1, Qt::AlignBottom);
-    vLayout->addWidget(YvalueBox, 1, Qt::AlignBottom);
-    vLayout->addWidget(ZvalueBox, 1, Qt::AlignBottom);
-    vLayout->addWidget(updateButton, 1, Qt::AlignBottom);
+    plot->rescaleAxes();
+    plot->replot();
+    plot->setMinimumSize(500, 500);
+    plot->setMaximumSize(500, 500);
+    vLayout->addWidget(plot);
+
+    gridLayout->addWidget(rangeButton,0 ,0);
+    gridLayout->addWidget(startButton, 1, 0);
+    gridLayout->addWidget(stopButton, 2, 0);
+    gridLayout->addWidget(EndValueBox, 3, 0);
+    gridLayout->addWidget(StartValueBox, 4, 0);
+
+    gridLayout->addWidget(XvalueBox, 0, 1);
+    gridLayout->addWidget(YvalueBox, 1, 1);
+    gridLayout->addWidget(ZvalueBox, 2, 1);
+    gridLayout->addWidget(updateButton, 3, 1);
 
     widget->setWindowTitle(QStringLiteral("Input Handling for Axes"));
 
     Data *graphData = new Data(graph);
-    Calc *calc = new Calc(graphData);
+    Calc *calc = new Calc(graphData, plot, colorMap, colorScale);
 
     QObject::connect(rangeButton, &QPushButton::clicked, graphData, &Data::toggleRanges);
     QObject::connect(startButton, &QPushButton::clicked, calc, &Calc::start);

@@ -28,11 +28,13 @@ SOURCES += \
     axesinputhandler.cpp \
     data.cpp \
     label.cpp \
-    calc.cpp
+    calc.cpp \
+    qcustomplot.cpp
 
 HEADERS += \
     axesinputhandler.h \
     data.h \
     label.h \
     calc.h \
-    const.h
+    const.h \
+    qcustomplot.h

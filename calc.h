@@ -7,12 +7,13 @@
 #include "data.h"
 #include "const.h"
 #include "qcustomplot.h"
+#include <QSpinBox>
 
 class Calc : public QObject
 {
     Q_OBJECT
 public:
-    Calc(Data* init_data, QCustomPlot* init_plot, QCPColorMap* init_colorMap, QCPColorScale *init_colorScale);
+    Calc(Data* init_data, QCustomPlot* init_plot, QCPColorMap* init_colorMap, QCPColorScale *init_colorScale, QSpinBox *init_valuePlot);
     ~Calc();
     Data *graphData;
     QTimer *timer;
@@ -25,6 +26,8 @@ public:
     QCustomPlot* plot;
     QCPColorMap* colorMap;
     QCPColorScale *colorScale;
+    int typePlot;
+    QSpinBox *valuePlot;
     QScatterDataArray* getArray(float level);
     float getPhy(Label* label);
     void updateLabels();
@@ -33,7 +36,9 @@ public:
         { return pow((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2), 0.5); }
 
 public slots:
-    void drawPlot(int type, int value);
+    void drawPlot();
+    void setTypePlot(int type);
+    void setValuePlot();
     double showValueFunc(double value);
     void showField();
     void showFieldEnd(double value);

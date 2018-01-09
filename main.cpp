@@ -36,6 +36,7 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QGridLayout>
+#include <QtWidgets/QComboBox>
 #include <QPushButton>
 #include <QtWidgets/QMessageBox>
 #include <QDoubleSpinBox>
@@ -104,11 +105,22 @@ int main(int argc, char **argv)
     plot->setMaximumSize(500, 500);
     vLayout->addWidget(plot);
 
+    QSpinBox *valuePlotBox = new QSpinBox(widget);
+    valuePlotBox->setValue(0);
+
+    QComboBox *typePlotBox = new QComboBox(widget);
+    typePlotBox->addItem(QString("X"));
+    typePlotBox->addItem(QString("Y"));
+    typePlotBox->addItem(QString("Z"));
+    typePlotBox->setCurrentIndex(2);
+
     gridLayout->addWidget(rangeButton,0 ,0);
-    gridLayout->addWidget(startButton, 1, 0);
-    gridLayout->addWidget(stopButton, 2, 0);
-    gridLayout->addWidget(EndValueBox, 3, 0);
-    gridLayout->addWidget(StartValueBox, 4, 0);
+    gridLayout->addWidget(EndValueBox, 1, 0);
+    gridLayout->addWidget(StartValueBox, 2, 0);
+    gridLayout->addWidget(startButton, 3, 0);
+    gridLayout->addWidget(stopButton, 4, 0);
+    gridLayout->addWidget(valuePlotBox, 5, 0);
+    gridLayout->addWidget(typePlotBox, 6, 0);
 
     gridLayout->addWidget(XvalueBox, 0, 1);
     gridLayout->addWidget(YvalueBox, 1, 1);
@@ -118,7 +130,7 @@ int main(int argc, char **argv)
     widget->setWindowTitle(QStringLiteral("Input Handling for Axes"));
 
     Data *graphData = new Data(graph);
-    Calc *calc = new Calc(graphData, plot, colorMap, colorScale);
+    Calc *calc = new Calc(graphData, plot, colorMap, colorScale, valuePlotBox);
 
     QObject::connect(rangeButton, &QPushButton::clicked, graphData, &Data::toggleRanges);
     QObject::connect(startButton, &QPushButton::clicked, calc, &Calc::start);
@@ -129,6 +141,8 @@ int main(int argc, char **argv)
     QObject::connect(YvalueBox, SIGNAL(valueChanged(double)), calc, SLOT(setY(double)));
     QObject::connect(ZvalueBox, SIGNAL(valueChanged(double)), calc, SLOT(setZ(double)));
     QObject::connect(updateButton, &QPushButton::clicked, calc, &Calc::updateSource);
+    QObject::connect(valuePlotBox, SIGNAL(valueChanged(int)), calc, SLOT(setValuePlot()));
+    QObject::connect(typePlotBox, SIGNAL(currentIndexChanged(int)), calc, SLOT(setTypePlot(int)));
 
     EndValueBox->setValue(1.0);
     widget->show();

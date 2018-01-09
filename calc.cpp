@@ -51,11 +51,12 @@ float init_dd(float angle)
         return 0;*/ // sector
 }
 
-Calc::Calc(Data* init_data, QCustomPlot *init_plot, QCPColorMap *init_colorMap, QCPColorScale *init_colorScale):
+Calc::Calc(Data* init_data, QCustomPlot *init_plot, QCPColorMap *init_colorMap, QCPColorScale *init_colorScale, QSpinBox *init_valuePlot):
     graphData(init_data),
     plot(init_plot),
     colorMap(init_colorMap),
-    colorScale(init_colorScale)
+    colorScale(init_colorScale),
+    valuePlot(init_valuePlot)
 {
     startValue = 0;
     endValue = 0;
@@ -75,7 +76,9 @@ Calc::Calc(Data* init_data, QCustomPlot *init_plot, QCPColorMap *init_colorMap, 
     updateLabels();
     updateSource();
     graphData->toggleRanges();
-    drawPlot(3, 0);
+    typePlot = 2;
+    valuePlot->setValue(0);
+    drawPlot();
 }
 
 Calc::~Calc()
@@ -84,41 +87,100 @@ Calc::~Calc()
     labels.clear();
 }
 
-void Calc::drawPlot(int type, int value)
+enum AXIS {X = 0, Y = 1, Z = 2};
+
+void Calc::drawPlot()
 {
     float minVal = 1;
     float maxVal = 0;
-    if (type == 3)
-    {
-        // give the axes some labels:
+    int value = valuePlot->value()*PPM;
+
+    switch (typePlot) {
+    case X:
+        if (valuePlot->value() == SIZE_X)
+            value--;
+        plot->xAxis->setLabel("Axis Y");
+        plot->yAxis->setLabel("Axis Z");
+        colorMap->data()->setSize(SIZE_Y*PPM, SIZE_Z*PPM);
+        colorMap->data()->setRange(QCPRange(0, SIZE_Y), QCPRange(0, SIZE_Z));
+
+        for (int ny = 0; ny < SIZE_Y*PPM; ny++)
+        for (int nz = 0; nz < SIZE_Z*PPM; nz++)
+        {
+            colorMap->data()->setCell(ny, nz, field[value*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz]);
+            minVal = std::min(minVal, field[value*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz]);
+            maxVal = std::max(maxVal, field[value*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz]);
+        }
+        break;
+    case Y:
+        if (valuePlot->value() == SIZE_Y)
+            value--;
+        plot->xAxis->setLabel("Axis X");
+        plot->yAxis->setLabel("Axis Z");
+        colorMap->data()->setSize(SIZE_X*PPM, SIZE_Z*PPM);
+        colorMap->data()->setRange(QCPRange(0, SIZE_X), QCPRange(0, SIZE_Z));
+
+        for (int nx = 0; nx < SIZE_X*PPM; nx++)
+        for (int nz = 0; nz < SIZE_Z*PPM; nz++)
+        {
+            colorMap->data()->setCell(nx, nz, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + value*SIZE_Z*PPM + nz]);
+            minVal = std::min(minVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + value*SIZE_Z*PPM + nz]);
+            maxVal = std::max(maxVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + value*SIZE_Z*PPM + nz]);
+        }
+        break;
+    case Z:
+        if (valuePlot->value() == SIZE_Z)
+            value--;
         plot->xAxis->setLabel("Axis X");
         plot->yAxis->setLabel("Axis Y");
-
-        /*colorMap->data()->setSize(50, 50);
-        colorMap->data()->setRange(QCPRange(0, 2), QCPRange(0, 2));
-        for (int x = 0; x < 50; ++x)
-          for (int y = 0; y < 50; ++y)
-            colorMap->data()->setCell(x, y, qCos(x/10.0)+qSin(y/10.0));
-        colorMap->rescaleDataRange(true);*/
-
         colorMap->data()->setSize(SIZE_X*PPM, SIZE_Y*PPM);
         colorMap->data()->setRange(QCPRange(0, SIZE_X), QCPRange(0, SIZE_Y));
 
         for (int nx = 0; nx < SIZE_X*PPM; nx++)
         for (int ny = 0; ny < SIZE_Y*PPM; ny++)
         {
-            colorMap->data()->setCell(nx, ny, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value*PPM]);
-            minVal = std::min(minVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value*PPM]);
-            maxVal = std::max(maxVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value*PPM]);
+            colorMap->data()->setCell(nx, ny, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value]);
+            minVal = std::min(minVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value]);
+            maxVal = std::max(maxVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value]);
         }
-
-        colorScale->setDataRange(QCPRange(minVal, maxVal));
-        colorMap->rescaleDataRange(true);
-        plot->rescaleAxes();
-        plot->replot();
+        break;
+    default:
+        break;
     }
+
+    colorScale->setDataRange(QCPRange(minVal, maxVal));
+    colorMap->rescaleDataRange(true);
+    plot->rescaleAxes();
+    plot->replot();
 }
 
+
+void Calc::setTypePlot(int type)
+{
+    typePlot = type;
+    setValuePlot();
+}
+
+void Calc::setValuePlot()
+{
+    switch (typePlot) {
+    case X:
+        if (valuePlot->value() > SIZE_X)
+            valuePlot->setValue(SIZE_X);
+        break;
+    case Y:
+        if (valuePlot->value() > SIZE_Y)
+            valuePlot->setValue(SIZE_Y);
+        break;
+    case Z:
+        if (valuePlot->value() > SIZE_Z)
+            valuePlot->setValue(SIZE_Z);
+        break;
+    default:
+        break;
+    }
+    drawPlot();
+}
 
 void Calc::updateLabels()
 {
@@ -156,7 +218,7 @@ void Calc::updateSource()
     graphData->updateData(1, dataArray);
     updateField();
 
-    drawPlot(3, 0);
+    drawPlot();
 }
 
 float Calc::getPhy(Label* label)

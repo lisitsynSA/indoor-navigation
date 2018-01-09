@@ -30,7 +30,6 @@
 #include "data.h"
 #include "const.h"
 
-#include <QtCore/QRandomGenerator>
 #include <QtDataVisualization/QScatterDataProxy>
 #include <QtDataVisualization/Q3DScene>
 #include <QtDataVisualization/Q3DCamera>
@@ -48,7 +47,7 @@ Data::Data(Q3DScatter *scatter)
       //! [1]
       m_autoAdjust(false)
 {
-    m_graph->activeTheme()->setType(Q3DTheme::ThemeEbony);//ThemeRetro);
+    m_graph->activeTheme()->setType(Q3DTheme::ThemeEbony);
     m_graph->activeTheme()->setLabelBorderEnabled(true);
     m_graph->activeTheme()->setLabelBackgroundColor(QColor(QRgb(0x151550)));
     m_graph->activeTheme()->setLabelTextColor(Qt::lightGray);
@@ -56,9 +55,9 @@ Data::Data(Q3DScatter *scatter)
     m_graph->setShadowQuality(QAbstract3DGraph::ShadowQualityMedium);
     m_graph->scene()->activeCamera()->setCameraPreset(Q3DCamera::CameraPresetIsometricRight);
 
-    m_graph->axisX()->setRange(0.0f, SIZE_X);//-20.0f, 20.0f);
-    m_graph->axisY()->setRange(0.0f, SIZE_Y);//-10.0f, 10.0f);
-    m_graph->axisZ()->setRange(0.0f, SIZE_Z);//-20.0f, 20.0f);
+    m_graph->axisX()->setRange(0.0f, SIZE_X);
+    m_graph->axisY()->setRange(0.0f, SIZE_Y);
+    m_graph->axisZ()->setRange(0.0f, SIZE_Z);
 
     //! [0]
     // Give ownership of the handler to the graph and make it the active handler
@@ -87,9 +86,9 @@ void Data::toggleRanges()
         m_inputHandler->setDragSpeedModifier(1.5f);
         m_autoAdjust = true;
     } else {
-        m_graph->axisX()->setRange(0.0f, SIZE_X);//-20.0f, 20.0f);
-        m_graph->axisY()->setRange(0.0f, SIZE_Y);//-10.0f, 10.0f);
-        m_graph->axisZ()->setRange(0.0f, SIZE_Z);//-20.0f, 20.0f);
+        m_graph->axisX()->setRange(0.0f, SIZE_X);
+        m_graph->axisY()->setRange(0.0f, SIZE_Y);
+        m_graph->axisZ()->setRange(0.0f, SIZE_Z);
         m_inputHandler->setDragSpeedModifier(15.0f);
         m_autoAdjust = false;
     }
@@ -130,133 +129,9 @@ void Data::addData()
     series5->setMesh(QAbstract3DSeries::MeshSphere);
     series5->setItemSize(0.07);
     m_graph->addSeries(series5);
-
-    /*QScatterDataArray *dataArray = new QScatterDataArray;
-    dataArray->resize(itemCount);
-    QScatterDataItem *ptrToDataArray = &dataArray->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        ptrToDataArray->setPosition(QVector3D(sin(i)*2 + 5, cos(i)*2 + 5, i/50.0));
-        ptrToDataArray++;
-    }
-    QScatterDataArray *dataArray2 = new QScatterDataArray;
-    dataArray2->resize(itemCount);
-    ptrToDataArray = &dataArray2->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        ptrToDataArray->setPosition(QVector3D(sin(i)*5 + 5,cos(i)*5 + 5, sin(5*i) + 5));
-        ptrToDataArray++;
-    }
-    QScatterDataArray *dataArray3 = new QScatterDataArray;
-    dataArray3->resize(itemCount);
-    ptrToDataArray = &dataArray3->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        //ptrToDataArray->setPosition(QVector3D(i,0,i));
-        ptrToDataArray->setPosition(QVector3D(25,cos(i*i)*5 + 10,sin(i*i)*5 + 20));
-        ptrToDataArray++;
-    }
-    QScatterDataArray *dataArray4 = new QScatterDataArray;
-    dataArray4->resize(itemCount);
-    ptrToDataArray = &dataArray4->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        //ptrToDataArray->setPosition(QVector3D(0,i,i));
-        ptrToDataArray->setPosition(QVector3D(sin(i*i*4)*5+20,cos(i*i)*5 + 10,sin(i*i)*5 + 20));
-        ptrToDataArray++;
-    }
-    QScatterDataArray *dataArray5 = new QScatterDataArray;
-    dataArray5->resize(itemCount);
-    ptrToDataArray = &dataArray5->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        ptrToDataArray->setPosition(QVector3D(sin(i)*5+20,cos(i*i)*5 + 10,sin(i*i)*5*0 + 20));
-        ptrToDataArray++;
-    }
-
-    m_graph->seriesList().at(0)->dataProxy()->resetArray(dataArray);
-    m_graph->seriesList().at(1)->dataProxy()->resetArray(dataArray2);
-    m_graph->seriesList().at(2)->dataProxy()->resetArray(dataArray3);
-    m_graph->seriesList().at(3)->dataProxy()->resetArray(dataArray4);
-    m_graph->seriesList().at(4)->dataProxy()->resetArray(dataArray5);*/
 }
 
 void Data::updateData(int series, QScatterDataArray *dataArray)
 {
     m_graph->seriesList().at(series)->dataProxy()->resetArray(dataArray);
-}
-
-void Data::start()
-{
-    timer = new QTimer();
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(updateData()));
-    timer->start(10); // И запустим таймер
-}
-
-void Data::updateData()
-{
-    static int step = 0;
-
-    QScatterDataArray *dataArray = new QScatterDataArray;
-    dataArray->resize(itemCount);
-    QScatterDataItem *ptrToDataArray = &dataArray->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        ptrToDataArray->setPosition(QVector3D(sin(i + step/10.0)*2 + 5, cos(i + step/10.0)*2 + 5, i/50.0));
-        ptrToDataArray++;
-    }
-    QScatterDataArray *dataArray2 = new QScatterDataArray;
-    dataArray2->resize(itemCount);
-    ptrToDataArray = &dataArray2->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        ptrToDataArray->setPosition(QVector3D(sin(i)*5 + 5,cos(i)*5 + 5, sin(5*i + step/10.0) + 5));
-        ptrToDataArray++;
-    }
-    QScatterDataArray *dataArray3 = new QScatterDataArray;
-    dataArray3->resize(itemCount);
-    ptrToDataArray = &dataArray3->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        //ptrToDataArray->setPosition(QVector3D(i,0,i));
-        ptrToDataArray->setPosition(QVector3D(20 + cos(step/50.0)*5,cos(i*i)*5 + 10,sin(i*i)*5 + 20));
-        ptrToDataArray++;
-    }
-
-    QScatterDataArray *dataArray4 = new QScatterDataArray;
-    dataArray4->resize(itemCount);
-    ptrToDataArray = &dataArray4->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        //ptrToDataArray->setPosition(QVector3D(0,i,i));
-        ptrToDataArray->setPosition(QVector3D(sin(step/5.0 + i*i*4)*5+20,cos(i*i)*5 + 10,sin(i*i)*5 + 20));
-        ptrToDataArray++;
-    }
-
-    QScatterDataArray *dataArray5 = new QScatterDataArray;
-    dataArray5->resize(itemCount);
-    ptrToDataArray = &dataArray5->first();
-    for (int i = 0; i < itemCount; i++) {
-        //ptrToDataArray->setPosition(randVector());
-        ptrToDataArray->setPosition(QVector3D(sin(i)*5+20,cos(i*i)*5*cos(step/50.0) + 10,sin(i*i)*5*sin(step/50.0) + 20));
-        ptrToDataArray++;
-    }
-
-    m_graph->seriesList().at(0)->dataProxy()->resetArray(dataArray);
-    m_graph->seriesList().at(1)->dataProxy()->resetArray(dataArray2);
-    m_graph->seriesList().at(2)->dataProxy()->resetArray(dataArray3);
-    m_graph->seriesList().at(3)->dataProxy()->resetArray(dataArray4);
-    m_graph->seriesList().at(4)->dataProxy()->resetArray(dataArray5);
-    step++;
-}
-
-QVector3D Data::randVector()
-{
-    return QVector3D(
-                (float)(QRandomGenerator::global()->bounded(100)) / 2.0f -
-                (float)(QRandomGenerator::global()->bounded(100)) / 2.0f,
-                (float)(QRandomGenerator::global()->bounded(100)) / 2.0f -
-                (float)(QRandomGenerator::global()->bounded(100)) / 2.0f,
-                (float)(QRandomGenerator::global()->bounded(100)) / 2.0f -
-                (float)(QRandomGenerator::global()->bounded(100)) / 2.0f);
 }

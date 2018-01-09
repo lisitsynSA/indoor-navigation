@@ -8,6 +8,7 @@
 #include "const.h"
 #include "qcustomplot.h"
 #include <QSpinBox>
+#include <QTimer>
 
 class Calc : public QObject
 {

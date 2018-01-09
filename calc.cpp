@@ -1,5 +1,6 @@
 #include "calc.h"
 
+
 //       0  1  2  3   4      5      6   7 8 9
 //array: x0 y0 z0 cos sinsin sincos phy x y z
 float init_p(float* data, float(*dd)(float))

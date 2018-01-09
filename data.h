@@ -34,7 +34,6 @@
 
 #include <QtDataVisualization/q3dscatter.h>
 #include <QtGui/QVector3D>
-#include <QTimer>
 
 using namespace QtDataVisualization;
 
@@ -46,21 +45,15 @@ public:
     ~Data();
 
     void toggleRanges();
-    void start();
     void updateData(int series, QScatterDataArray *dataArray);
-
-public slots:
-    void updateData();
 
 private:
     void addData();
-    QVector3D randVector();
 
 private:
     Q3DScatter *m_graph;
     AxesInputHandler *m_inputHandler;
     bool m_autoAdjust;
-    QTimer *timer;
 };
 
 #endif

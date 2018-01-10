@@ -35,6 +35,7 @@
 #include <QtDataVisualization/Q3DCamera>
 #include <QtDataVisualization/QScatter3DSeries>
 #include <QtDataVisualization/Q3DTheme>
+#include <QtDataVisualization/QCustom3DItem>
 
 using namespace QtDataVisualization;
 
@@ -100,6 +101,7 @@ void Data::addData()
     QScatter3DSeries *series = new QScatter3DSeries;
     series->setMesh(QAbstract3DSeries::MeshCube);
     series->setMeshSmooth(true);
+    series->setBaseColor(QColor(255, 0, 255));
     series->setItemSize(0.3);
     m_graph->addSeries(series);
 
@@ -108,12 +110,14 @@ void Data::addData()
     series2->setMesh(QAbstract3DSeries::MeshMinimal);
     series2->setMeshSmooth(true);
     series2->setItemSize(0.3);
+    series2->setBaseColor(QColor(255, 0, 0));
     m_graph->addSeries(series2);
 
     // Direction of diagram
     QScatter3DSeries *series3 = new QScatter3DSeries;
     series3->setMesh(QAbstract3DSeries::MeshSphere);
     series3->setMeshSmooth(true);
+    series3->setBaseColor(QColor(100, 0, 255));
     series3->setItemSize(0.23);
     m_graph->addSeries(series3);
 
@@ -129,6 +133,15 @@ void Data::addData()
     series5->setMesh(QAbstract3DSeries::MeshSphere);
     series5->setItemSize(0.07);
     m_graph->addSeries(series5);
+
+    // Surface
+
+    QScatter3DSeries *series6 = new QScatter3DSeries();
+    series6->setMesh(QAbstract3DSeries::MeshCube);
+    series6->setMeshSmooth(true);
+    series6->setBaseColor(QColor(255, 255, 255));
+    series6->setItemSize(0.07);
+    m_graph->addSeries(series6);
 }
 
 void Data::updateData(int series, QScatterDataArray *dataArray)

@@ -95,22 +95,25 @@ void Calc::drawPlot()
     float minVal = 1;
     float maxVal = 0;
     int value = valuePlot->value()*PPM;
+    QScatterDataArray *dataArray = new QScatterDataArray;
 
     switch (typePlot) {
     case X:
         if (valuePlot->value() == SIZE_X)
             value--;
-        plot->xAxis->setLabel("Axis Y");
-        plot->yAxis->setLabel("Axis Z");
-        colorMap->data()->setSize(SIZE_Y*PPM, SIZE_Z*PPM);
-        colorMap->data()->setRange(QCPRange(0, SIZE_Y), QCPRange(0, SIZE_Z));
+        plot->xAxis->setLabel("Axis Z");
+        plot->yAxis->setLabel("Axis Y");
+        colorMap->data()->setSize(SIZE_Z*PPM, SIZE_Y*PPM);
+        colorMap->data()->setRange(QCPRange(0, SIZE_Z), QCPRange(0, SIZE_Y));
 
-        for (int ny = 0; ny < SIZE_Y*PPM; ny++)
         for (int nz = 0; nz < SIZE_Z*PPM; nz++)
+        for (int ny = 0; ny < SIZE_Y*PPM; ny++)
         {
-            colorMap->data()->setCell(ny, nz, field[value*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz]);
+            colorMap->data()->setCell(nz, ny, field[value*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz]);
             minVal = std::min(minVal, field[value*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz]);
             maxVal = std::max(maxVal, field[value*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz]);
+
+            dataArray->push_back(QVector3D(valuePlot->value(), ny/PPM_f, nz/PPM_f));
         }
         break;
     case Y:
@@ -127,6 +130,8 @@ void Calc::drawPlot()
             colorMap->data()->setCell(nx, nz, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + value*SIZE_Z*PPM + nz]);
             minVal = std::min(minVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + value*SIZE_Z*PPM + nz]);
             maxVal = std::max(maxVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + value*SIZE_Z*PPM + nz]);
+
+            dataArray->push_back(QVector3D(nx/PPM_f, valuePlot->value(), nz/PPM_f));
         }
         break;
     case Z:
@@ -143,6 +148,8 @@ void Calc::drawPlot()
             colorMap->data()->setCell(nx, ny, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value]);
             minVal = std::min(minVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value]);
             maxVal = std::max(maxVal, field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + value]);
+
+            dataArray->push_back(QVector3D(nx/PPM_f, ny/PPM_f, valuePlot->value()));
         }
         break;
     default:
@@ -153,8 +160,8 @@ void Calc::drawPlot()
     colorMap->rescaleDataRange(true);
     plot->rescaleAxes();
     plot->replot();
+    graphData->updateData(5, dataArray);
 }
-
 
 void Calc::setTypePlot(int type)
 {

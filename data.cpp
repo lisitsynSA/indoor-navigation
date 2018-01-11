@@ -101,7 +101,7 @@ void Data::addData()
     QScatter3DSeries *series = new QScatter3DSeries;
     series->setMesh(QAbstract3DSeries::MeshCube);
     series->setMeshSmooth(true);
-    series->setBaseColor(QColor(255, 0, 255));
+    series->setBaseColor(QColor(255, 255, 0));
     series->setItemSize(0.3);
     m_graph->addSeries(series);
 
@@ -117,14 +117,13 @@ void Data::addData()
     QScatter3DSeries *series3 = new QScatter3DSeries;
     series3->setMesh(QAbstract3DSeries::MeshSphere);
     series3->setMeshSmooth(true);
-    series3->setBaseColor(QColor(100, 0, 255));
+    series3->setBaseColor(QColor(100, 100, 0));
     series3->setItemSize(0.23);
     m_graph->addSeries(series3);
 
     // Room
     QScatter3DSeries *series4 = new QScatter3DSeries;
     series4->setMesh(QAbstract3DSeries::MeshBevelCube);
-    series4->setMeshSmooth(true);
     series4->setItemSize(0.001);
     m_graph->addSeries(series4);
 
@@ -135,12 +134,10 @@ void Data::addData()
     m_graph->addSeries(series5);
 
     // Surface
-
     QScatter3DSeries *series6 = new QScatter3DSeries();
     series6->setMesh(QAbstract3DSeries::MeshCube);
-    series6->setMeshSmooth(true);
     series6->setBaseColor(QColor(255, 255, 255));
-    series6->setItemSize(0.07);
+    series6->setItemSize(0.08);
     m_graph->addSeries(series6);
 }
 

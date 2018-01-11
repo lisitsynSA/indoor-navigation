@@ -26,7 +26,7 @@ float init_p(float* data, float(*dd)(float))
                  << vecLen << (x*data[3] + y*data[4] + z*data[5])\
                  << (x*data[3] + y*data[4] + z*data[5])/vecLen;*/
     //qDebug() << "phi = " << data[3] << "; R = " << R << "; vecLen = " << vecLen;
-    //return pow(M_E, -(R - vecLen)*(R - vecLen)/2.0);
+    //return pow(M_E, -(R - vecLen)*(R - vecLen)/2.0); //normal distribution
     if (vecLen > R)
     {
         //qDebug() << ">" << 1/(vecLen - R + 1);

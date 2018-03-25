@@ -61,7 +61,7 @@ Calc::Calc(Data* init_data, QCustomPlot *init_plot, QCPColorMap *init_colorMap, 
 {
     startValue = 0;
     endValue = 0;
-    Label *newLabel = new Label(0,0,0,atan(pow(2, 0.5)),M_PI/4,&init_p, &init_dd);
+    Label *newLabel = new Label(0,10,20,0,0,&init_p, &init_dd);
     labels.push_back(newLabel);
     newLabel = new Label(SIZE_X,0,SIZE_Z,M_PI - atan(pow(2, 0.5)),3*M_PI/4,&init_p, &init_dd);
     labels.push_back(newLabel);

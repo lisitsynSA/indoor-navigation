@@ -97,7 +97,7 @@ void Data::toggleRanges()
 
 void Data::addData()
 {
-    // Labels
+    // Cameras
     QScatter3DSeries *series = new QScatter3DSeries;
     series->setMesh(QAbstract3DSeries::MeshCube);
     series->setMeshSmooth(true);
@@ -139,6 +139,14 @@ void Data::addData()
     series6->setBaseColor(QColor(255, 255, 255));
     series6->setItemSize(0.08);
     m_graph->addSeries(series6);
+
+    // Beacon
+    QScatter3DSeries *series7 = new QScatter3DSeries;
+    series7->setMesh(QAbstract3DSeries::MeshMinimal);
+    series7->setMeshSmooth(true);
+    series7->setItemSize(0.3);
+    series7->setBaseColor(QColor(0, 255, 0));
+    m_graph->addSeries(series7);
 }
 
 void Data::updateData(int series, QScatterDataArray *dataArray)

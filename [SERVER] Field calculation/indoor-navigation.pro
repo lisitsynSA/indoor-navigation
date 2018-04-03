@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui datavisualization qml quick printsupport
+QT       += core gui datavisualization qml quick printsupport  websockets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -29,7 +29,9 @@ SOURCES += \
     data.cpp \
     label.cpp \
     calc.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    socketserver.cpp \
+    message.cpp
 
 HEADERS += \
     axesinputhandler.h \
@@ -37,4 +39,6 @@ HEADERS += \
     label.h \
     calc.h \
     const.h \
-    qcustomplot.h
+    qcustomplot.h \
+    socketserver.h \
+    message.h

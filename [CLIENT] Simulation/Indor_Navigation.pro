@@ -1,14 +1,14 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2017-12-17T13:08:35
+# Project created by QtCreator 2018-03-23T17:55:11
 #
 #-------------------------------------------------
 
-QT       += core gui datavisualization qml quick printsupport
+QT       += core gui websockets datavisualization qml quick
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = indoor-navigation
+TARGET = Indor_Navigation
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -25,16 +25,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    axesinputhandler.cpp \
-    data.cpp \
-    label.cpp \
+        mainwindow.cpp \
+    socketclient.cpp \
     calc.cpp \
-    qcustomplot.cpp
+    label.cpp \
+    message.cpp
 
 HEADERS += \
-    axesinputhandler.h \
-    data.h \
-    label.h \
+        mainwindow.h \
+    socketclient.h \
     calc.h \
     const.h \
-    qcustomplot.h
+    label.h \
+    message.h
+
+FORMS += \
+        mainwindow.ui

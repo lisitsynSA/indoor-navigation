@@ -26,7 +26,7 @@ float init_p(float* data, float(*dd)(float))
                  << vecLen << (x*data[3] + y*data[4] + z*data[5])\
                  << (x*data[3] + y*data[4] + z*data[5])/vecLen;*/
     //qDebug() << "phi = " << data[3] << "; R = " << R << "; vecLen = " << vecLen;
-    //return pow(M_E, -(R - vecLen)*(R - vecLen)/2.0); //normal distribution
+    return pow(M_E, -(R - vecLen)*(R - vecLen)/2.0); //normal distribution
     if (vecLen > R)
     {
         //qDebug() << ">" << 1/(vecLen - R + 1);
@@ -61,23 +61,10 @@ Calc::Calc(Data* init_data, QCustomPlot *init_plot, QCPColorMap *init_colorMap, 
 {
     startValue = 0;
     endValue = 0;
-    Label *newLabel = new Label(0,10,20,0,0,&init_p, &init_dd);
-    labels.push_back(newLabel);
-    newLabel = new Label(SIZE_X,0,SIZE_Z,M_PI - atan(pow(2, 0.5)),3*M_PI/4,&init_p, &init_dd);
-    labels.push_back(newLabel);
-    newLabel = new Label(0,SIZE_Y,SIZE_Z,atan(pow(2, 0.5)),5*M_PI/4,&init_p, &init_dd);
-    labels.push_back(newLabel);
-    newLabel = new Label(SIZE_X,SIZE_Y,0,M_PI - atan(pow(2, 0.5)),7*M_PI/4,&init_p, &init_dd);
-    labels.push_back(newLabel);
 
-    x = X0;
-    y = Y0;
-    z = Z0;
     timer = NULL;
-    updateLabels();
-    updateSource();
     graphData->toggleRanges();
-    typePlot = 2;
+    typePlot = Z;
     valuePlot->setValue(0);
     drawPlot();
 }
@@ -88,7 +75,169 @@ Calc::~Calc()
     labels.clear();
 }
 
-enum AXIS {X = 0, Y = 1, Z = 2};
+float Calc::distance(float x1, float y1, float z1, float x2, float y2, float z2)
+{
+    return pow((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2), 0.5);
+}
+
+void Calc::updateRoom()
+{
+    QScatterDataArray *dataArray = new QScatterDataArray;
+    dataArray->push_back(QVector3D(SIZE_X, SIZE_Y, SIZE_Z));
+    dataArray->push_back(QVector3D(SIZE_X, SIZE_Y, 0));
+    dataArray->push_back(QVector3D(SIZE_X, 0, SIZE_Z));
+    dataArray->push_back(QVector3D(SIZE_X, 0, 0));
+    dataArray->push_back(QVector3D(0, SIZE_Y, SIZE_Z));
+    dataArray->push_back(QVector3D(0, SIZE_Y, 0));
+    dataArray->push_back(QVector3D(0, 0, SIZE_Z));
+    dataArray->push_back(QVector3D(0, 0, 0));
+    graphData->updateData(3, dataArray);
+}
+
+void Calc::updateLabels()
+{
+    QScatterDataArray *dataArray = new QScatterDataArray;
+    // Labels
+    dataArray = new QScatterDataArray;
+    for (int i = 0; i < labels.size(); ++i)
+        dataArray->push_back(QVector3D(labels.at(i)->x0, labels.at(i)->y0, labels.at(i)->z0));
+    graphData->updateData(0, dataArray);
+
+    // direction of diagram
+    dataArray = new QScatterDataArray;
+    for (int i = 0; i < labels.size(); ++i)
+        dataArray->push_back(QVector3D(labels.at(i)->x0 + cos(labels.at(i)->alfa),\
+               labels.at(i)->y0 + sin(labels.at(i)->alfa)*sin(labels.at(i)->beta),\
+               labels.at(i)->z0 + sin(labels.at(i)->alfa)*cos(labels.at(i)->beta)));
+    graphData->updateData(2, dataArray);
+}
+
+int Calc::updateField()
+{
+    for (int i = 0; i < labels.size(); ++i)
+        if (labels.at(i)->updateField() == -1)
+            return -1;
+
+    for (int nx = 0; nx < SIZE_X*PPM; nx++)
+    for (int ny = 0; ny < SIZE_Y*PPM; ny++)
+    for (int nz = 0; nz < SIZE_Z*PPM; nz++)
+    {
+        field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] = 1;
+    }
+    float max = 0;
+    float sourceX = 0;
+    float sourceY = 0;
+    float sourceZ = 0;
+    for (int i = 0; i < labels.size(); ++i)
+    for (int nx = 0; nx < SIZE_X*PPM; nx++)
+    for (int ny = 0; ny < SIZE_Y*PPM; ny++)
+    for (int nz = 0; nz < SIZE_Z*PPM; nz++)
+    {
+        field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] *=\
+                labels.at(i)->getValue(nx, ny, nz);
+        // finding source
+        if (i == (labels.size() - 1))
+        {
+            if (max < field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz])
+            {
+                max = field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz];
+                sourceX = nx/PPM_f;
+                sourceY = ny/PPM_f;
+                sourceZ = nz/PPM_f;
+            } else if (max == field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz])
+            {
+                sourceX = (sourceX + nx/PPM_f)/2;
+                sourceY = (sourceY + ny/PPM_f)/2;
+                sourceZ = (sourceZ + nz/PPM_f)/2;
+            }
+        }
+    }
+
+    updateSource(sourceX, sourceY, sourceZ);
+
+    for (int i = 0; i < labels.size(); ++i)
+        labels.at(i)->setRSSI(-1);
+    return 0;
+}
+
+void Calc::updateSource(float x, float y, float z)
+{
+    QScatterDataArray *dataArray = new QScatterDataArray;
+    dataArray->push_back(QVector3D(x, y, z));
+    graphData->updateData(1, dataArray);
+}
+
+void Calc::updateBeacon(float x, float y, float z)
+{
+    QScatterDataArray *dataArray = new QScatterDataArray;
+    dataArray->push_back(QVector3D(x, y, z));
+    graphData->updateData(6, dataArray);
+}
+
+QScatterDataArray* Calc::getArray(float level)
+{
+    QScatterDataArray *dataArray = new QScatterDataArray;
+
+    int check = 0;
+    for (int nx = 0; nx < SIZE_X*PPM - 1; nx++)
+    for (int ny = 0; ny < SIZE_Y*PPM - 1; ny++)
+    for (int nz = 0; nz < SIZE_Z*PPM - 1; nz++)
+    {
+        check = 0;
+        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] > level;
+        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + (nz + 1)] > level;
+        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + nz] > level;
+        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + (nz + 1)] > level;
+        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] > level;
+        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + (nz + 1)] > level;
+        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + nz] > level;
+        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + (nz + 1)] > level;
+        if (check != 0 && check != 8)
+        {
+            dataArray->push_back(QVector3D((nx + 0.5)/PPM_f, (ny + 0.5)/PPM_f, (nz + 0.5)/PPM_f));
+        }
+    }
+
+    qDebug() << "Count for value " << level << "; SIZE " << dataArray->size();
+    return dataArray;
+}
+
+void Calc::onMessageRecieved(Message msg)
+{
+    msgRoom* room = NULL;
+    msgCamera* camera = NULL;
+    msgValue* value = NULL;
+    msgBeacon* beacon = NULL;
+    Label *newLabel = NULL;
+
+    switch (msg.getType()) {
+    case Room:
+        room = msg.getRoom();
+        updateRoom();
+        break;
+    case Camera:
+        camera = msg.getCamera();
+        newLabel = new Label(camera->cameraNumber, camera->x0, camera->y0, camera->z0,\
+                                    camera->alfa, camera->beta, &init_p, &init_dd);
+        labels.push_back(newLabel);
+        updateLabels();
+        break;
+    case Value:
+        value = msg.getValue();
+        for (int i = 0; i < labels.size(); ++i)
+            if (labels.at(i)->number == value->camera)
+                labels.at(i)->setRSSI(value->value);
+        if (updateField() == 0)
+            drawPlot();
+        break;
+    case Beacon:
+        beacon = msg.getBeacon();
+        updateBeacon(beacon->X, beacon->Y, beacon->Z);
+        break;
+    default:
+        break;
+    }
+}
 
 void Calc::drawPlot()
 {
@@ -165,7 +314,7 @@ void Calc::drawPlot()
 
 void Calc::setTypePlot(int type)
 {
-    typePlot = type;
+    typePlot = (AXIS)type;
     setValuePlot();
 }
 
@@ -190,95 +339,14 @@ void Calc::setValuePlot()
     drawPlot();
 }
 
-void Calc::updateLabels()
-{
-    // room
-    QScatterDataArray *dataArray = new QScatterDataArray;
-    dataArray->push_back(QVector3D(SIZE_X, SIZE_Y, SIZE_Z));
-    dataArray->push_back(QVector3D(SIZE_X, SIZE_Y, 0));
-    dataArray->push_back(QVector3D(SIZE_X, 0, SIZE_Z));
-    dataArray->push_back(QVector3D(SIZE_X, 0, 0));
-    dataArray->push_back(QVector3D(0, SIZE_Y, SIZE_Z));
-    dataArray->push_back(QVector3D(0, SIZE_Y, 0));
-    dataArray->push_back(QVector3D(0, 0, SIZE_Z));
-    dataArray->push_back(QVector3D(0, 0, 0));
-    graphData->updateData(3, dataArray);
-
-    // Labels
-    dataArray = new QScatterDataArray;
-    for (int i = 0; i < labels.size(); ++i)
-        dataArray->push_back(QVector3D(labels.at(i)->x0, labels.at(i)->y0, labels.at(i)->z0));
-    graphData->updateData(0, dataArray);
-
-    // direction of diagram
-    dataArray = new QScatterDataArray;
-    for (int i = 0; i < labels.size(); ++i)
-        dataArray->push_back(QVector3D(labels.at(i)->x0 + cos(labels.at(i)->alfa),\
-               labels.at(i)->y0 + sin(labels.at(i)->alfa)*sin(labels.at(i)->beta),\
-               labels.at(i)->z0 + sin(labels.at(i)->alfa)*cos(labels.at(i)->beta)));
-    graphData->updateData(2, dataArray);
-}
-
-void Calc::updateSource()
-{
-    QScatterDataArray *dataArray = new QScatterDataArray;
-    dataArray->push_back(QVector3D(x, y, z));
-    graphData->updateData(1, dataArray);
-    updateField();
-
-    drawPlot();
-}
-
-float Calc::getPhy(Label* label)
-{
-    float x0 = x - label->x0;
-    float y0 = y - label->y0;
-    float z0 = z - label->z0;
-
-    float R = pow(x0*x0 + y0*y0 + z0*z0, 0.5);
-    float angle = 0;
-    float cos_angle = (x0*label->xdd + y0*label->ydd + z0*label->zdd)/R;
-    if (cos_angle > 1)
-        angle = 0;
-    else if (cos_angle < -1)
-        angle = M_PI;
-    else
-        angle = acos(cos_angle);
-    return (1/R)*init_dd(angle);
-}
-
-void Calc::updateField()
-{
-    for (int nx = 0; nx < SIZE_X*PPM; nx++)
-    for (int ny = 0; ny < SIZE_Y*PPM; ny++)
-    for (int nz = 0; nz < SIZE_Z*PPM; nz++)
-    {
-        field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] = 1;//0;
-    }
-    for (int i = 0; i < labels.size(); ++i)
-    {
-        qDebug() << "Update Label's field:" << i;
-        labels.at(i)->updateField(getPhy(labels.at(i)));
-        //2/pow((SIZE_X*SIZE_X + SIZE_Y*SIZE_Y + SIZE_Z*SIZE_Z),0.5));
-        for (int nx = 0; nx < SIZE_X*PPM; nx++)
-        for (int ny = 0; ny < SIZE_Y*PPM; ny++)
-        for (int nz = 0; nz < SIZE_Z*PPM; nz++)
-        {
-            // +=
-            field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] *=\
-                    labels.at(i)->getValue(nx, ny, nz);
-        }
-    }
-}
-
 void Calc::start()
 {
     qDebug() << "Start";
     if (timer == NULL)
         timer = new QTimer();
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(showField()));
-    timer->start(100); // И запустим таймер
-    value = startValue;
+    timer->start(100);
+    fieldValue = startValue;
 }
 
 void Calc::stop()
@@ -286,7 +354,7 @@ void Calc::stop()
     qDebug() << "End";
     if (timer != NULL)
         timer->stop();
-    value = 0;
+    fieldValue = 0;
     QScatterDataArray *dataArray = new QScatterDataArray;
     graphData->updateData(4, dataArray); // clear Field
 
@@ -300,10 +368,10 @@ double Calc::showValueFunc(double value)
 
 void Calc::showField()
 {
-    graphData->updateData(4, getArray(value));
-    value = showValueFunc(value);
-    if (value > endValue)
-        value = startValue;
+    graphData->updateData(4, getArray(fieldValue));
+    fieldValue = showValueFunc(fieldValue);
+    if (fieldValue > endValue)
+        fieldValue = startValue;
 }
 
 void Calc::showFieldEnd(double value)
@@ -316,32 +384,4 @@ void Calc::showFieldStart(double value)
 {
     startValue = value;
     graphData->updateData(4, getArray((float)value));
-}
-
-QScatterDataArray* Calc::getArray(float level)
-{
-    QScatterDataArray *dataArray = new QScatterDataArray;
-
-    int check = 0;
-    for (int nx = 0; nx < SIZE_X*PPM - 1; nx++)
-    for (int ny = 0; ny < SIZE_Y*PPM - 1; ny++)
-    for (int nz = 0; nz < SIZE_Z*PPM - 1; nz++)
-    {
-        check = 0;
-        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] > level;
-        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + (nz + 1)] > level;
-        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + nz] > level;
-        check += field[nx*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + (nz + 1)] > level;
-        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + nz] > level;
-        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + ny*SIZE_Z*PPM + (nz + 1)] > level;
-        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + nz] > level;
-        check += field[(nx + 1)*SIZE_Y*PPM*SIZE_Z*PPM + (ny + 1)*SIZE_Z*PPM + (nz + 1)] > level;
-        if (check != 0 && check != 8)
-        {
-            dataArray->push_back(QVector3D((nx + 0.5)/PPM_f, (ny + 0.5)/PPM_f, (nz + 0.5)/PPM_f));
-        }
-    }
-
-    qDebug() << "Count for value " << level << "; SIZE " << dataArray->size();
-    return dataArray;
 }

@@ -4,51 +4,31 @@
 #include <QObject>
 #include <QVector>
 #include "label.h"
-#include "data.h"
 #include "const.h"
-#include "qcustomplot.h"
 #include <QSpinBox>
 #include <QTimer>
+#include "message.h"
 
 class Calc : public QObject
 {
     Q_OBJECT
 public:
-    Calc(Data* init_data, QCustomPlot* init_plot, QCPColorMap* init_colorMap, QCPColorScale *init_colorScale, QSpinBox *init_valuePlot);
+    Calc();
     ~Calc();
-    Data *graphData;
     QTimer *timer;
-    float field[SIZE_X*PPM*SIZE_Y*PPM*SIZE_Z*PPM];
-    float value;
-    float startValue;
-    float endValue;
     QVector<Label*> labels;
+    float step;
     float x, y, z;
-    QCustomPlot* plot;
-    QCPColorMap* colorMap;
-    QCPColorScale *colorScale;
-    int typePlot;
-    QSpinBox *valuePlot;
-    QScatterDataArray* getArray(float level);
-    float getPhy(Label* label);
-    void updateLabels();
-    void updateField();
-    float distance(float x1, float y1, float z1, float x2, float y2, float z2)\
-        { return pow((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2), 0.5); }
+
+    void setRSSI(Label* label);
+    float distance(float x1, float y1, float z1, float x2, float y2, float z2);
+
+signals:
+    void sendMessage(Message msg);
 
 public slots:
-    void drawPlot();
-    void setTypePlot(int type);
-    void setValuePlot();
-    double showValueFunc(double value);
-    void showField();
-    void showFieldEnd(double value);
-    void showFieldStart(double value);
-    void updateSource();
-    void setX(double value) { x = value;}
-    void setY(double value) { y = value;}
-    void setZ(double value) { z = value;}
     void start();
+    void timerHandler();
     void stop();
 
 };

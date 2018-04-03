@@ -30,6 +30,7 @@
 #include "data.h"
 #include "calc.h"
 #include "qcustomplot.h"
+#include "socketserver.h"
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QWidget>
@@ -40,6 +41,7 @@
 #include <QPushButton>
 #include <QtWidgets/QMessageBox>
 #include <QDoubleSpinBox>
+#include <QTextEdit>
 
 int main(int argc, char **argv)
 {
@@ -80,15 +82,6 @@ int main(int argc, char **argv)
     QDoubleSpinBox *StartValueBox = new QDoubleSpinBox(widget);
     StartValueBox->setDecimals(5);
 
-    QDoubleSpinBox *XvalueBox = new QDoubleSpinBox(widget);
-    XvalueBox->setValue(X0);
-    QDoubleSpinBox *YvalueBox = new QDoubleSpinBox(widget);
-    YvalueBox->setValue(Y0);
-    QDoubleSpinBox *ZvalueBox = new QDoubleSpinBox(widget);
-    ZvalueBox->setValue(Z0);
-    QPushButton *updateButton = new QPushButton(widget);
-    updateButton->setText(QStringLiteral("Update"));
-
     QCustomPlot* plot = new QCustomPlot(widget);
     QCPColorMap* colorMap = new QCPColorMap(plot->xAxis, plot->yAxis);
     plot->addPlottable(colorMap);
@@ -104,6 +97,9 @@ int main(int argc, char **argv)
     plot->setMinimumSize(500, 500);
     plot->setMaximumSize(500, 500);
     vLayout->addWidget(plot);
+
+    QTextEdit *msgBrowser = new QTextEdit(widget);
+    msgBrowser->setReadOnly(true);
 
     QSpinBox *valuePlotBox = new QSpinBox(widget);
     valuePlotBox->setValue(0);
@@ -121,13 +117,9 @@ int main(int argc, char **argv)
     gridLayout->addWidget(stopButton, 4, 0);
     gridLayout->addWidget(valuePlotBox, 5, 0);
     gridLayout->addWidget(typePlotBox, 6, 0);
+    gridLayout->addWidget(msgBrowser, 0, 1, 7, 1);
 
-    gridLayout->addWidget(XvalueBox, 0, 1);
-    gridLayout->addWidget(YvalueBox, 1, 1);
-    gridLayout->addWidget(ZvalueBox, 2, 1);
-    gridLayout->addWidget(updateButton, 3, 1);
-
-    widget->setWindowTitle(QStringLiteral("Input Handling for Axes"));
+    widget->setWindowTitle(QStringLiteral("[SERVER] Field calculation"));
 
     Data *graphData = new Data(graph);
     Calc *calc = new Calc(graphData, plot, colorMap, colorScale, valuePlotBox);
@@ -137,12 +129,13 @@ int main(int argc, char **argv)
     QObject::connect(stopButton, &QPushButton::clicked, calc, &Calc::stop);
     QObject::connect(EndValueBox, SIGNAL(valueChanged(double)), calc, SLOT(showFieldEnd(double)));
     QObject::connect(StartValueBox, SIGNAL(valueChanged(double)), calc, SLOT(showFieldStart(double)));
-    QObject::connect(XvalueBox, SIGNAL(valueChanged(double)), calc, SLOT(setX(double)));
-    QObject::connect(YvalueBox, SIGNAL(valueChanged(double)), calc, SLOT(setY(double)));
-    QObject::connect(ZvalueBox, SIGNAL(valueChanged(double)), calc, SLOT(setZ(double)));
-    QObject::connect(updateButton, &QPushButton::clicked, calc, &Calc::updateSource);
     QObject::connect(valuePlotBox, SIGNAL(valueChanged(int)), calc, SLOT(setValuePlot()));
     QObject::connect(typePlotBox, SIGNAL(currentIndexChanged(int)), calc, SLOT(setTypePlot(int)));
+
+    SocketServer* server = new SocketServer(1234, widget);
+
+    QObject::connect(server, SIGNAL(browserPrint(QString)), msgBrowser, SLOT(setPlainText(QString)));
+    QObject::connect(server, SIGNAL(sendMessage(Message)), calc, SLOT(onMessageRecieved(Message)));
 
     EndValueBox->setValue(1.0);
     widget->show();

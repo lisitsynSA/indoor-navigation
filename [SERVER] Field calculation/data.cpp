@@ -28,7 +28,6 @@
 ****************************************************************************/
 
 #include "data.h"
-#include "const.h"
 
 #include <QtDataVisualization/QScatterDataProxy>
 #include <QtDataVisualization/Q3DScene>
@@ -56,9 +55,9 @@ Data::Data(Q3DScatter *scatter)
     m_graph->setShadowQuality(QAbstract3DGraph::ShadowQualityMedium);
     m_graph->scene()->activeCamera()->setCameraPreset(Q3DCamera::CameraPresetIsometricRight);
 
-    m_graph->axisX()->setRange(0.0f, SIZE_X);
-    m_graph->axisY()->setRange(0.0f, SIZE_Y);
-    m_graph->axisZ()->setRange(0.0f, SIZE_Z);
+    m_graph->axisX()->setRange(0.0f, 10);
+    m_graph->axisY()->setRange(0.0f, 10);
+    m_graph->axisZ()->setRange(0.0f, 10);
 
     //! [0]
     // Give ownership of the handler to the graph and make it the active handler
@@ -87,9 +86,9 @@ void Data::toggleRanges()
         m_inputHandler->setDragSpeedModifier(1.5f);
         m_autoAdjust = true;
     } else {
-        m_graph->axisX()->setRange(0.0f, SIZE_X);
-        m_graph->axisY()->setRange(0.0f, SIZE_Y);
-        m_graph->axisZ()->setRange(0.0f, SIZE_Z);
+        m_graph->axisX()->setRange(0.0f, 10);
+        m_graph->axisY()->setRange(0.0f, 10);
+        m_graph->axisZ()->setRange(0.0f, 10);
         m_inputHandler->setDragSpeedModifier(15.0f);
         m_autoAdjust = false;
     }

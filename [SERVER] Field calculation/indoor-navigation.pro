@@ -38,7 +38,6 @@ HEADERS += \
     data.h \
     label.h \
     calc.h \
-    const.h \
     qcustomplot.h \
     socketserver.h \
     message.h

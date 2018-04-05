@@ -79,6 +79,7 @@ int main(int argc, char **argv)
 
     QDoubleSpinBox *EndValueBox = new QDoubleSpinBox(widget);
     EndValueBox->setDecimals(5);
+    EndValueBox->setValue(1.0);
     QDoubleSpinBox *StartValueBox = new QDoubleSpinBox(widget);
     StartValueBox->setDecimals(5);
 
@@ -137,7 +138,6 @@ int main(int argc, char **argv)
     QObject::connect(server, SIGNAL(browserPrint(QString)), msgBrowser, SLOT(setPlainText(QString)));
     QObject::connect(server, SIGNAL(sendMessage(Message)), calc, SLOT(onMessageRecieved(Message)));
 
-    EndValueBox->setValue(1.0);
     widget->show();
     return app.exec();
 }

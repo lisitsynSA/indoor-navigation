@@ -87,20 +87,20 @@ void Calc::start()
 void Calc::timerHandler()
 {
     // Update beacon position
-    x = X0 + 5*sin(step/5);
+    x = X0 + 5*sin(step/5.0);
     y = Y0 + sin(step);
-    z = Z0 + 5*cos(step/5);
+    z = Z0 + 5*cos(step/5.0);
     step += 1;
 
     // MSG beacon
-    Message beacon(x, y, z);
+    Message beacon(x, y, z, step % 1000);
     emit sendMessage(beacon);
 
     // MSG values
     for (int i = 0; i < labels.size(); ++i)
     {
         setRSSI(labels.at(i));
-        Message value(labels.at(i)->number, labels.at(i)->rssi);
+        Message value(labels.at(i)->number, labels.at(i)->rssi, step % 1000);
         emit sendMessage(value);
     }
 }

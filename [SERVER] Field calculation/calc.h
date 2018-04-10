@@ -37,14 +37,23 @@ public:
     void updateRoom(float x, float y, float z);
     void updateLabels();
     int updateField();
-    void updateSource(float x, float y, float z);
-    void updateBeacon(float x, float y, float z);
+    void updateSource();
+    void updateBeacon();
     QScatterDataArray* getArray(float level);
 
     QCustomPlot* plot;
     QCPColorMap* colorMap;
     QCPColorScale *colorScale;
     QSpinBox *valuePlot;
+
+
+    float sourceX, sourceY, sourceZ;
+    float beaconX, beaconY, beaconZ;
+    int32_t beaconTime, cameraTime;
+    void calcError();
+
+signals:
+    sendCalcError(double err);
 
 public slots:
     void onMessageRecieved(Message msg);
@@ -57,7 +66,6 @@ public slots:
     void showFieldStart(double value);
     void start();
     void stop();
-
 };
 
 #endif // CALC_H

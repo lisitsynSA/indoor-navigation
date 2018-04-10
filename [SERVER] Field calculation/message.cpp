@@ -21,16 +21,16 @@ Message::Message(int32_t initNumber, float initX0, float initY0, float initZ0,\
     msg.append((const char *) &camera, sizeof(msgCamera));
 }
 
-Message::Message(int32_t initNumber, float initValue) // Value
+Message::Message(int32_t initNumber, float initValue, int32_t initTime) // Value
 {
-    msgValue value = {initNumber, initValue};
+    msgValue value = {initNumber, initValue, initTime};
     msg.append((char) Value);
     msg.append((const char *) &value, sizeof(msgValue));
 }
 
-Message::Message(float initX, float initY, float initZ) // Beacon
+Message::Message(float initX, float initY, float initZ, int32_t initTime) // Beacon
 {
-    msgBeacon beacon = {initX, initY, initZ};
+    msgBeacon beacon = {initX, initY, initZ, initTime};
     msg.append((char) Beacon);
     msg.append((const char *) &beacon, sizeof(msgBeacon));
 }
@@ -76,6 +76,7 @@ QString Message::getInfo()
         value = getValue();
         info += " camera=" + QString::number(value->camera);
         info += " value=" + QString::number(value->value);
+        info += " time=" + QString::number(value->time);
         break;
     case Beacon:
         info += "Beacon";
@@ -83,6 +84,7 @@ QString Message::getInfo()
         info += " X=" + QString::number(beacon->X);
         info += " Y=" + QString::number(beacon->Y);
         info += " Z=" + QString::number(beacon->Z);
+        info += " time=" + QString::number(beacon->time);
         break;
     default:
         info += "WRONG MESSAGE";

@@ -32,16 +32,25 @@ void Label::updateMemAlloc(int x, int y, int z, int ppm)
     sizeZ = z;
     PPM = ppm;
     PPM_f = ppm;
+    time = -1;
     if (field)
         delete field;
     field = new float [x*ppm*y*ppm*z*ppm];
 }
 
-void Label::setRSSI(float value)
+void Label::setRSSI(float value, int RSSItime)
 {
-    if (rssi != value)
+    if (time != RSSItime)
     {
-        rssi = value;
+        time = RSSItime;
+        if (rssi != value)
+        {
+            rssi = value;
+            calculated = false;
+        }
+    } else
+    {
+        rssi = pow(rssi*value, 0.5);
         calculated = false;
     }
 }

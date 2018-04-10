@@ -82,6 +82,8 @@ int main(int argc, char **argv)
     EndValueBox->setValue(1.0);
     QDoubleSpinBox *StartValueBox = new QDoubleSpinBox(widget);
     StartValueBox->setDecimals(5);
+    QDoubleSpinBox *errorBox = new QDoubleSpinBox(widget);
+    errorBox->setDecimals(5);
 
     QCustomPlot* plot = new QCustomPlot(widget);
     QCPColorMap* colorMap = new QCPColorMap(plot->xAxis, plot->yAxis);
@@ -118,7 +120,8 @@ int main(int argc, char **argv)
     gridLayout->addWidget(stopButton, 4, 0);
     gridLayout->addWidget(valuePlotBox, 5, 0);
     gridLayout->addWidget(typePlotBox, 6, 0);
-    gridLayout->addWidget(msgBrowser, 0, 1, 7, 1);
+    gridLayout->addWidget(errorBox, 7, 0);
+    gridLayout->addWidget(msgBrowser, 0, 1, 8, 1);
 
     widget->setWindowTitle(QStringLiteral("[SERVER] Field calculation"));
 
@@ -132,6 +135,7 @@ int main(int argc, char **argv)
     QObject::connect(StartValueBox, SIGNAL(valueChanged(double)), calc, SLOT(showFieldStart(double)));
     QObject::connect(valuePlotBox, SIGNAL(valueChanged(int)), calc, SLOT(setValuePlot()));
     QObject::connect(typePlotBox, SIGNAL(currentIndexChanged(int)), calc, SLOT(setTypePlot(int)));
+    QObject::connect(calc, SIGNAL(sendCalcError(double)), errorBox, SLOT(setValue(double)));
 
     SocketServer* server = new SocketServer(1234, widget);
 

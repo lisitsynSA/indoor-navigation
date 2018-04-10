@@ -26,7 +26,7 @@ float init_p(float* data, float(*dd)(float))
                  << vecLen << (x*data[3] + y*data[4] + z*data[5])\
                  << (x*data[3] + y*data[4] + z*data[5])/vecLen;*/
     //qDebug() << "phi = " << data[3] << "; R = " << R << "; vecLen = " << vecLen;
-    //return pow(M_E, -(R - vecLen)*(R - vecLen)/2.0); //normal distribution
+    return pow(M_E, -(R - vecLen)*(R - vecLen)/2.0); //normal distribution
     if (vecLen > R)
     {
         //qDebug() << ">" << 1/(vecLen - R + 1);
@@ -60,7 +60,7 @@ Calc::Calc(Data* init_data, QCustomPlot *init_plot, QCPColorMap *init_colorMap, 
     valuePlot(init_valuePlot)
 {
     startValue = 0;
-    endValue = 0;
+    endValue = 1;
 
     field = NULL;
     sizeX = 0;
@@ -70,6 +70,7 @@ Calc::Calc(Data* init_data, QCustomPlot *init_plot, QCPColorMap *init_colorMap, 
     PPM_f = 2;
 
     timer = NULL;
+    beaconTime = -1;
     graphData->toggleRanges();
     typePlot = Z;
     valuePlot->setValue(0);
@@ -140,6 +141,16 @@ void Calc::updateLabels()
 
 int Calc::updateField()
 {
+    // check time
+    int checkTime = -1;
+    if (labels.size())
+        checkTime = labels.at(0)->time;
+    for (int i = 1; i < labels.size(); ++i)
+        if (labels.at(i)->time != checkTime)
+            return -1;
+    if (checkTime < beaconTime)
+        return -1;
+    // check field
     for (int i = 0; i < labels.size(); ++i)
         if (labels.at(i)->updateField() == -1)
             return -1;
@@ -150,10 +161,10 @@ int Calc::updateField()
     {
         field[nx*sizeY*PPM*sizeZ*PPM + ny*sizeZ*PPM + nz] = 1;
     }
-    float max = 0;
-    float sourceX = 0;
-    float sourceY = 0;
-    float sourceZ = 0;
+    float max = -1;
+    sourceX = 0;
+    sourceY = 0;
+    sourceZ = 0;
     for (int i = 0; i < labels.size(); ++i)
     for (int nx = 0; nx < sizeX*PPM; nx++)
     for (int ny = 0; ny < sizeY*PPM; ny++)
@@ -179,24 +190,24 @@ int Calc::updateField()
         }
     }
 
-    updateSource(sourceX, sourceY, sourceZ);
+    updateSource();
+    cameraTime = checkTime;
+    calcError();
 
-    for (int i = 0; i < labels.size(); ++i)
-        labels.at(i)->setRSSI(-1);
     return 0;
 }
 
-void Calc::updateSource(float x, float y, float z)
+void Calc::updateSource()
 {
     QScatterDataArray *dataArray = new QScatterDataArray;
-    dataArray->push_back(QVector3D(x, y, z));
+    dataArray->push_back(QVector3D(sourceX, sourceY, sourceZ));
     graphData->updateData(1, dataArray);
 }
 
-void Calc::updateBeacon(float x, float y, float z)
+void Calc::updateBeacon()
 {
     QScatterDataArray *dataArray = new QScatterDataArray;
-    dataArray->push_back(QVector3D(x, y, z));
+    dataArray->push_back(QVector3D(beaconX, beaconY, beaconZ));
     graphData->updateData(6, dataArray);
 }
 
@@ -227,6 +238,12 @@ QScatterDataArray* Calc::getArray(float level)
     return dataArray;
 }
 
+void Calc::calcError()
+{
+    if (beaconTime == cameraTime)
+        emit sendCalcError(distance(sourceX, sourceY, sourceZ, beaconX, beaconY, beaconZ));
+}
+
 void Calc::onMessageRecieved(Message msg)
 {
     msgRoom* room = NULL;
@@ -252,7 +269,7 @@ void Calc::onMessageRecieved(Message msg)
         value = msg.getValue();
         for (int i = 0; i < labels.size(); ++i)
             if (labels.at(i)->number == value->camera)
-                labels.at(i)->setRSSI(value->value);
+                labels.at(i)->setRSSI(value->value, value->time);
         if (updateField() == 0)
         {
             drawPlot();
@@ -261,7 +278,12 @@ void Calc::onMessageRecieved(Message msg)
         break;
     case Beacon:
         beacon = msg.getBeacon();
-        updateBeacon(beacon->X, beacon->Y, beacon->Z);
+        beaconX = beacon->X;
+        beaconY = beacon->Y;
+        beaconZ = beacon->Z;
+        updateBeacon();
+        beaconTime = beacon->time;
+        calcError();
         break;
     default:
         break;

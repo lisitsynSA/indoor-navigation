@@ -17,7 +17,7 @@ public:
     ~Calc();
     QTimer *timer;
     QVector<Label*> labels;
-    float step;
+    int step;
     float x, y, z;
 
     void setRSSI(Label* label);

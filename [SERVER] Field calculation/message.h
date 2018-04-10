@@ -21,10 +21,12 @@ struct msgCamera{
 struct msgValue{
     int32_t camera;
     float value;
+    int32_t time;
 };
 
 struct msgBeacon{
     float X, Y, Z;
+    int32_t time;
 };
 
 class Message
@@ -35,8 +37,8 @@ public:
             float initStartX, float initStartY, float initStartZ); // Room
     Message(int32_t initNumber, float initX0, float initY0, float initZ0,\
             float initAlfa, float initBeta, int32_t initDD); // Camera
-    Message(int32_t initNumber, float initValue); // Value
-    Message(float initX, float initY, float initZ); // Beacon
+    Message(int32_t initNumber, float initValue, int32_t initTime); // Value
+    Message(float initX, float initY, float initZ, int32_t initTime); // Beacon
 
     MSGType getType();
     QString getInfo();
